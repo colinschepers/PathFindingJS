@@ -3,37 +3,38 @@ var cameFrom = {};
 var costs = {};
 var expectedCosts = {};
 var path = [];
+var current = null;
+var maxExpectedCost = null;
+var globalSimulationNr = 0;
 
-function getShortestPath(start, goal, delay) {
+function initAStar(start, goal) {
     openSet = new Set();
     cameFrom = {};
     costs = {};
     expectedCosts = {};
     path = [];
+    current = start;
+    maxExpectedCost = getHeuristicCost(start, goal);
+    globalSimulationNr++;
 
     openSet.add(start);
     cameFrom[start] = start;
     costs[start] = 0;
-    expectedCosts[start] = getHeuristicCost(start, goal);
+    expectedCosts[start] = maxExpectedCost;
 
-    setTimeout(getNextLocation, delay);
-
-    while (openSet.Count > 0 && current !== goal) {
-        setTimeout(addNewLocations, delay);
-        setTimeout(getNextLocation, delay);
-    }
-
-    while (goal in cameFrom && goal !== start) {
-        setTimeout(backtrack, delay);
-    }
-
-    return path;
+    getNextLocation(globalSimulationNr);
 }
 
-function getNextLocation() {
-    let current = null;
-    let minExpectedCost = double.MaxValue;
+function getNextLocation(simulationNr) {
+    if(simulationNr != globalSimulationNr) {
+        return;
+    }
+    if(paused) {
+        setTimeout(function() { getNextLocation(simulationNr); }, delay);
+        return;
+    }
 
+    let minExpectedCost = Infinity;
     for (const item of openSet) {
         const expectedCost = expectedCosts[item];
         if (expectedCost < minExpectedCost) {
@@ -42,12 +43,27 @@ function getNextLocation() {
         }
     }
 
-    openSet.remove(current);
+    openSet.delete(current);
+
+    if(current !== goal) {
+        setTimeout(function() { addNewLocations(simulationNr); }, delay);
+    } else {
+        setTimeout(function() { backtrack(simulationNr); }, delay);
+    }
 }
 
-function addNewLocations() {
+function addNewLocations(simulationNr) {
+    if(simulationNr != globalSimulationNr) {
+        return;
+    }
+    if(paused) {
+        setTimeout(function() { addNewLocations(simulationNr); }, delay);
+        return;
+    }
+
     for (const neighbor of getNeighbors(current)) {
         var newCost = costs[current] + getCost(current, neighbor);
+
         if (!(neighbor in costs) || newCost < costs[neighbor]) {
             cameFrom[neighbor] = current;
             costs[neighbor] = newCost;
@@ -55,46 +71,82 @@ function addNewLocations() {
             openSet.add(neighbor);
         }
     }
+
+    if(openSet.size > 0) {
+        setTimeout(function() { getNextLocation(simulationNr); }, delay);
+    }
 }
 
-function backtrack() {
-    path.unshift(0, goal);
-    goal = cameFrom[goal];
+function backtrack(simulationNr) {
+    if(simulationNr != globalSimulationNr) {
+        return;
+    }
+    if(paused) {
+        setTimeout(function() { backtrack(simulationNr); }, delay);
+        return;
+    }
+
+    path.unshift(current);
+    current = cameFrom[current];
+
+    if(current in cameFrom && current !== start) {
+        setTimeout(function() { backtrack(simulationNr); }, delay);
+    }
 }
 
 function getNeighbors(loc) {
     const neighbors = [];
-    if (loc.x > 0 && grid[loc.x - 1][loc.y]) {
-        neighbors.push({
-            x: loc.x - 1,
-            y: loc.y
-        });
+
+    const canUp = loc - gridSize >= 0;
+    const canDown = loc + gridSize < gridSize * gridSize;
+    const canLeft = loc % gridSize > 0;
+    const canRight = loc % gridSize < gridSize - 1;
+
+    if (canUp && grid[loc - gridSize]) {
+        neighbors.push(loc - gridSize);
     }
-    if (loc.x < gridSize - 1 && grid[loc.x + 1][loc.y]) {
-        neighbors.push({
-            x: loc.x + 1,
-            y: loc.y
-        });
+    if (canDown && grid[loc + gridSize]) {
+        neighbors.push(loc + gridSize);
     }
-    if (loc.y > 0 && grid[loc.x][loc.y - 1]) {
-        neighbors.push({
-            x: loc.x,
-            y: loc.y - 1
-        });
+    if (canLeft && grid[loc - 1]) {
+        neighbors.push(loc - 1);
     }
-    if (loc.y < gridSize - 1 && grid[loc.x][loc.y + 1]) {
-        neighbors.push({
-            x: loc.x,
-            y: loc.y + 1
-        });
+    if (canRight && grid[loc + 1]) {
+        neighbors.push(loc + 1);
     }
+
+    if(canGoDiagonal) {
+        if (canUp && canLeft && grid[loc - gridSize - 1] && (grid[loc - gridSize] || grid[loc - 1])) {
+            neighbors.push(loc - gridSize - 1);
+        }
+        if (canUp && canRight && grid[loc - gridSize + 1] && (grid[loc - gridSize] || grid[loc + 1])) {
+            neighbors.push(loc - gridSize + 1);
+        }
+        if (canDown && canLeft && grid[loc + gridSize - 1] && (grid[loc + gridSize] || grid[loc - 1])) {
+            neighbors.push(loc + gridSize - 1);
+        }
+        if (canDown && canRight && grid[loc + gridSize + 1] && (grid[loc + gridSize] || grid[loc + 1])) {
+            neighbors.push(loc + gridSize + 1);
+        }
+    }
+
     return neighbors;
 }
 
 function getHeuristicCost(from, to) {
-    return Math.abs(from.x - to.x) + Math.abs(from.y - to.y);
+    return euclideanDistance(from % gridSize, Math.floor(from / gridSize), to % gridSize, Math.floor(to / gridSize));
 }
 
 function getCost(from, to) {
-    return Math.abs(from.x - to.x) + Math.abs(from.y - to.y);
+    return euclideanDistance(from % gridSize, Math.floor(from / gridSize), to % gridSize, Math.floor(to / gridSize));
+}
+
+function manhattanDistance(x1, y1, x2, y2) {
+    return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+}
+
+function euclideanDistance(x1, y1, x2, y2) {
+    const dx = x1 - x2;
+    const dy = y1 - y2;
+    return Math.sqrt(dx * dx + dy * dy);
 }
