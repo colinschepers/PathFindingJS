@@ -1,4 +1,5 @@
-var openSet = new Set();
+var openList = [];
+var opened = new Set();
 var cameFrom = {};
 var costs = {};
 var expectedCosts = {};
@@ -8,7 +9,8 @@ var maxExpectedCost = null;
 var globalSimulationNr = 0;
 
 function initAStar(start, goal) {
-    openSet = new Set();
+    openList = [];
+    opened = new Set();
     cameFrom = {};
     costs = {};
     expectedCosts = {};
@@ -17,80 +19,64 @@ function initAStar(start, goal) {
     maxExpectedCost = getHeuristicCost(start, goal);
     globalSimulationNr++;
 
-    openSet.add(start);
+    openList.push(start);
+    opened.add(start);
     cameFrom[start] = start;
     costs[start] = 0;
     expectedCosts[start] = maxExpectedCost;
 
-    getNextLocation(globalSimulationNr);
+    aStar(globalSimulationNr);
 }
 
-function getNextLocation(simulationNr) {
-    if(simulationNr != globalSimulationNr) {
-        return;
-    }
-    if(paused) {
-        setTimeout(function() { getNextLocation(simulationNr); }, delay);
-        return;
-    }
+function aStar(simulationNr) {
+    if (paused) {
+        setTimeout(function () {
+            aStar(simulationNr);
+        }, delay);
+    } else if (current === goal) {
+        backtrack(simulationNr);
+    } else if (simulationNr == globalSimulationNr) {
+        openList.sort(function (a, b) {
+            return expectedCosts[b] - expectedCosts[a];
+        });
 
-    let minExpectedCost = Infinity;
-    for (const item of openSet) {
-        const expectedCost = expectedCosts[item];
-        if (expectedCost < minExpectedCost) {
-            current = item;
-            minExpectedCost = expectedCost;
+        current = openList.pop();
+
+        for (const neighbor of getNeighbors(current)) {
+            var newCost = costs[current] + getCost(current, neighbor);
+
+            if (!opened.has(neighbor) || newCost < costs[neighbor]) {
+                cameFrom[neighbor] = current;
+                costs[neighbor] = newCost;
+                expectedCosts[neighbor] = newCost + getHeuristicCost(neighbor, goal);
+
+                if (!openList.includes(neighbor)) {
+                    openList.push(neighbor);
+                    opened.add(neighbor);
+                }
+            }
         }
-    }
 
-    openSet.delete(current);
-
-    if(current !== goal) {
-        setTimeout(function() { addNewLocations(simulationNr); }, delay);
-    } else {
-        setTimeout(function() { backtrack(simulationNr); }, delay);
-    }
-}
-
-function addNewLocations(simulationNr) {
-    if(simulationNr != globalSimulationNr) {
-        return;
-    }
-    if(paused) {
-        setTimeout(function() { addNewLocations(simulationNr); }, delay);
-        return;
-    }
-
-    for (const neighbor of getNeighbors(current)) {
-        var newCost = costs[current] + getCost(current, neighbor);
-
-        if (!(neighbor in costs) || newCost < costs[neighbor]) {
-            cameFrom[neighbor] = current;
-            costs[neighbor] = newCost;
-            expectedCosts[neighbor] = newCost + getHeuristicCost(neighbor, goal);
-            openSet.add(neighbor);
+        if (openList.length > 0) {
+            setTimeout(function () {
+                aStar(simulationNr);
+            }, delay);
         }
-    }
-
-    if(openSet.size > 0) {
-        setTimeout(function() { getNextLocation(simulationNr); }, delay);
     }
 }
 
 function backtrack(simulationNr) {
-    if(simulationNr != globalSimulationNr) {
-        return;
-    }
-    if(paused) {
-        setTimeout(function() { backtrack(simulationNr); }, delay);
-        return;
-    }
+    if (paused) {
+        setTimeout(function () {
+            backtrack(simulationNr);
+        }, delay);
+    } else if (simulationNr == globalSimulationNr && current in cameFrom && current !== start) {
+        path.unshift(current);
+        current = cameFrom[current];
 
-    path.unshift(current);
-    current = cameFrom[current];
-
-    if(current in cameFrom && current !== start) {
-        setTimeout(function() { backtrack(simulationNr); }, delay);
+        setTimeout(function () {
+            backtrack(simulationNr);
+        }, delay);
     }
 }
 
@@ -115,7 +101,7 @@ function getNeighbors(loc) {
         neighbors.push(loc + 1);
     }
 
-    if(canGoDiagonal) {
+    if (allowDiagonal) {
         if (canUp && canLeft && grid[loc - gridSize - 1] && (grid[loc - gridSize] || grid[loc - 1])) {
             neighbors.push(loc - gridSize - 1);
         }
@@ -134,7 +120,7 @@ function getNeighbors(loc) {
 }
 
 function getHeuristicCost(from, to) {
-    return euclideanDistance(from % gridSize, Math.floor(from / gridSize), to % gridSize, Math.floor(to / gridSize));
+    return manhattanDistance(from % gridSize, Math.floor(from / gridSize), to % gridSize, Math.floor(to / gridSize));
 }
 
 function getCost(from, to) {

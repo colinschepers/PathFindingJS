@@ -8,31 +8,26 @@ canvas {
     display: block;
 }
 
-.menu-item-no-hover:hover {
-    color:#FFFFFF;
-    background-color:#111111;
-}
-
 .menu-item {
     -webkit-appearance: none;
-    background-color:#111111;
-    display:inline-block;
-    padding:0.1em 0.1em;
-    border:0.1em solid #FFFFFF;
-    margin:0 0.3em 0.3em 0;
-    border-radius:0.12em;
+    background-color: #111111;
+    display: inline-block;
+    padding: 0.1em 0.1em;
+    border: 0.1em solid #FFFFFF;
+    margin: 0 0.3em 0.3em 0;
+    border-radius: 0.12em;
     box-sizing: border-box;
-    text-decoration:none;
-    font-family:'Roboto',sans-serif;
-    font-weight:300;
-    color:#FFFFFF;
-    text-align:center;
+    text-decoration: none;
+    font: 400 13.3333px Arial;
+    font-weight: 300;
+    color: #FFFFFF;
+    text-align: center;
     transition: all 0.2s;
-  }
-  
+}
+
 .menu-item:hover {
-    color:#000000;
-    background-color:#222222;
+    color: #000000;
+    background-color: #333333;
 }
 
 .menu-item::-webkit-slider-thumb {
@@ -42,11 +37,15 @@ canvas {
     height: 20px;
     background: #FFFFFF;
     cursor: pointer;
-  }
-  
+}
+
 .menu-item::-moz-range-thumb {
     width: 20px;
     height: 20px;
     background: #FFFFFF;
     cursor: pointer;
+}
+
+.menu-item-checked {
+    background: #333333;
 }
