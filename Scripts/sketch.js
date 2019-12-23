@@ -46,13 +46,6 @@ function drawGrid() {
 function drawCells() {
     noStroke();
 
-    fill(255);
-    for (let i = 0; i < grid.length; i++) {
-        if (!grid[i]) {
-            rect((i % gridSize) * cellSize, Math.floor(i / gridSize) * cellSize, cellSize, cellSize)
-        }
-    }
-
     for (let location in costs) {
         const value = 50 + 200 * (costs[location] / maxExpectedCost);
         fill(value, 0, 0);
@@ -76,6 +69,13 @@ function drawCells() {
 
     fill(0, 0, 255);
     rect((goal % gridSize) * cellSize, Math.floor(goal / gridSize) * cellSize, cellSize, cellSize)
+
+    fill(255);
+    for (let i = 0; i < grid.length; i++) {
+        if (!grid[i]) {
+            rect((i % gridSize) * cellSize, Math.floor(i / gridSize) * cellSize, cellSize, cellSize)
+        }
+    }
 
     if (showTraceLines) {
         stroke(0);
@@ -213,7 +213,7 @@ function resetGrid() {
 
 function mousePressed() {
     const location = getMouseCell();
-    if (location) {
+    if (location !== undefined) {
         if (location == start) {
             clickedCellState = 'start';
         } else if (location == goal) {
@@ -227,12 +227,15 @@ function mousePressed() {
 
 function mouseDragged() {
     const location = getMouseCell();
-    if (location) {
+    if (location !== undefined) {
         if (clickedCellState === 'start' && grid[location]) {
             start = location;
+            initAStar(start, goal);
         } else if (clickedCellState === 'goal' && grid[location]) {
             goal = location;
-        } else if ((clickedCellState === true || clickedCellState === false) && location != start && location != goal) {
+            initAStar(start, goal);
+        } else if ((clickedCellState === true || clickedCellState === false) &&
+            location != start && location != goal) {
             grid[location] = clickedCellState;
         }
     }
