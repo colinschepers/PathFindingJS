@@ -14,7 +14,7 @@ Enabling the *Show trace lines* will draw lines on the grid, showing the route t
 
 Finally, the *Grid size* input field allows the user to change the granularity of the grid, while the *Delay* input field is used to add a short delay (in milliseconds) between every step of the algorithm. This allows the user to follow the algorithm more carefully.
 
-The output of the algorithm is shown by nice colors on the grid. The red squares in the application are the squares that have a calculated cost from the starting cell. The more red the square, the closer it thinks it is to the goal location. The yellow squares are part of the *open set*, which is an ordered list with squares that will be investigated next. The more yellow a square is, the more promising the algorithm thinks it is in reaching the goal.
+The output of the algorithm is shown by nice colors on the grid. The red squares in the application are the squares that have a calculated cost from the starting cell. The more red the square, the closer it thinks it is to the goal location. The yellow squares are part of the *open set*, which is an ordered list with squares that will be investigated next. The more yellow a square is, the more promising the algorithm thinks it is in reaching the goal. in case the the goal square is visited, according to the characteristics of the A* algorithm, the shortest path is found. The backtracking phase of the algorithm will change the color of the squares of the path pink.
 
 ## Implementation
 
