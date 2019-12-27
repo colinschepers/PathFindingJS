@@ -1,4 +1,4 @@
-const canvasSize = 800;
+const canvasSize = 600;
 const menuSize = 50;
 const defaultGridSize = 50;
 const defaultDelay = 0;
