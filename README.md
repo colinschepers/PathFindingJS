@@ -2,7 +2,7 @@
 
 Ever wondered how path finding techniques actually work? This is a demo application showing the steps of the A* algorithm [1]. **Click the image to go to the application.**
 
-# Graphical User Interface
+## Graphical User Interface
 
 <a href="https://colinschepers.github.io/PathFindingJS"><img align="right" src="./Images/animation.gif" alt="" title="Path finding in action" /></a>
 
@@ -16,7 +16,7 @@ Finally, the *Grid size* input field allows the user to change the granularity o
 
 The output of the algorithm is shown by nice colors on the grid. The red squares in the application are the squares that have a calculated cost from the starting cell. The more red the square, the closer it thinks it is to the goal location. The yellow squares are part of the *open set*, which is an ordered list with squares that will be investigated next. The more yellow a square is, the more promising the algorithm thinks it is in reaching the goal.
 
-# Implementation
+## Implementation
 
 This fully front-end based application is written in JavaScript (besides some basic *html* and *css*) and the visualization is done using the *p5.js* library [2]. The JavaScript async *setTimeout* function is used for every method call in the A* algorithm to allow for an delay, as described in the previous section. 
 
@@ -28,5 +28,5 @@ The heuristic distance metric used by the algorithm is the Manhattan distance [3
 
 1. https://en.wikipedia.org/wiki/A*_search_algorithm
 2. https://p5js.org/
-2. https://en.wikipedia.org/wiki/Taxicab_geometry
-2. https://en.wikipedia.org/wiki/Euclidean_distance
+3. https://en.wikipedia.org/wiki/Taxicab_geometry
+4. https://en.wikipedia.org/wiki/Euclidean_distance
